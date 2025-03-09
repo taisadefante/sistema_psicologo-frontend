@@ -119,13 +119,13 @@ const Patients = () => {
       cell: (row) => (
         <div>
           <button className={styles.editButton} onClick={() => handleEdit(row)}>
-            Editar
+            <img src="icon/pen.png" width={"20px"} />
           </button>
           <button
             className={styles.deleteButton}
             onClick={() => handleDelete(row.id)}
           >
-            Excluir
+            <img src="icon/bin.png" width={"20px"} />
           </button>
         </div>
       ),
