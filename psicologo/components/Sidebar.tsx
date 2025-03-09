@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router"; // ✅ Importando Router para navegação
+import { useRouter } from "next/router";
 import {
   FaBars,
   FaHome,
@@ -15,7 +15,7 @@ import styles from "../styles/Sidebar.module.css";
 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const router = useRouter(); // ✅ Hook para navegação
+  const router = useRouter();
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,14 +27,15 @@ const Sidebar: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    alert("Você saiu do sistema!");
+    localStorage.removeItem("auth"); // 🔹 Remove autenticação ao sair
+    router.push("/");
   };
 
   return (
     <div
       className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}
     >
-      {/* ✅ LOGO CENTRALIZADO */}
+      {/* ✅ LOGO */}
       <div className={styles.logoContainer}>
         <Image src="/logo.png" alt="Logo" width={150} height={50} />
       </div>
@@ -47,39 +48,39 @@ const Sidebar: React.FC = () => {
       <nav className={styles.menu}>
         <ul>
           <li>
-            <Link href="/">
-              <FaHome /> {isOpen && "Home"}
+            <Link href="/home">
+              <div className={styles.link}>
+                <FaHome /> {isOpen && "Home"}
+              </div>
             </Link>
           </li>
           <li>
-            <Link href="/patients">
-              <FaUser /> {isOpen && "Pacientes"}
+            <Link href="/pacientes">
+              <div className={styles.link}>
+                <FaUser /> {isOpen && "Pacientes"}
+              </div>
             </Link>
           </li>
           <li>
-            <Link href="/appointments">
-              <FaCalendarAlt /> {isOpen && "Consultas"}
+            <Link href="/consultas">
+              <div className={styles.link}>
+                <FaCalendarAlt /> {isOpen && "Consultas"}
+              </div>
             </Link>
           </li>
           <li>
-            <Link href="/payments">
-              <FaMoneyBillWave /> {isOpen && "Pagamentos"}
+            <Link href="/pagamentos">
+              <div className={styles.link}>
+                <FaMoneyBillWave /> {isOpen && "Pagamentos"}
+              </div>
             </Link>
           </li>
           <li>
-            {/* ✅ Corrigindo a navegação para o Dashboard */}
-            <div
-              className={styles.link}
-              onClick={() => router.push("/dashboard")}
-              style={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <FaChartPie /> {isOpen && "Dashboard"}
-            </div>
+            <Link href="/dashboard">
+              <div className={styles.link}>
+                <FaChartPie /> {isOpen && "Dashboard"}
+              </div>
+            </Link>
           </li>
         </ul>
       </nav>

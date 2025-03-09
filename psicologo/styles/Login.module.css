@@ -1,0 +1,68 @@
+/* Estiliza o container do login */
+.loginContainer {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+/* Caixa de login */
+.loginBox {
+  display: flex;
+  width: 60%;
+  max-width: 800px;
+  background: white;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Logo do Psicólogo */
+.logoContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3f2fd;
+  padding: 20px;
+}
+
+/* Formulário de login */
+.formContainer {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 🔹 Alterado de `h2` para `.title` */
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+.inputField {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Botão de Login */
+.btnLogin {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btnLogin:hover {
+  background: #0056b3;
+}
