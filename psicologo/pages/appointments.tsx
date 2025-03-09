@@ -107,7 +107,7 @@ const Appointments = () => {
 
   return (
     <div style={{ padding: "20px", maxWidth: "1000px", margin: "auto" }}>
-      <h2>📅 Agenda Semanal</h2>
+      <h2>📅 Agenda Consultas</h2>
 
       {/* ✅ Formulário de agendamento */}
       <form
@@ -164,7 +164,9 @@ const Appointments = () => {
           required
         />
 
-        <button type="submit">Agendar Consulta</button>
+        <button type="submit" class="btn btn-primary mt-3">
+          Agendar Consulta
+        </button>
       </form>
 
       {/* ✅ Calendário exibindo a agenda semanal */}

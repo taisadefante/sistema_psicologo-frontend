@@ -29,13 +29,22 @@ const Payments = () => {
 
   const updatePaymentStatus = async (id: string, status: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/payments/${id}`, { status });
-
-      setPayments((prevPayments) =>
-        prevPayments.map((payment) =>
-          payment.id === id ? { ...payment, status } : payment
-        )
+      const response = await axios.put(
+        `http://localhost:5000/api/payments/${id}`,
+        { status }
       );
+
+      if (response.status === 200) {
+        setPayments((prevPayments) =>
+          prevPayments.map((payment) =>
+            payment.id === id ? { ...payment, status } : payment
+          )
+        );
+      } else {
+        console.error(
+          "Erro ao atualizar status do pagamento: Resposta não esperada"
+        );
+      }
     } catch (error) {
       console.error("Erro ao atualizar status do pagamento:", error);
     }
