@@ -13,8 +13,12 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "../styles/Sidebar.module.css";
 
-const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(true);
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -24,10 +28,10 @@ const Sidebar: React.FC = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [setIsOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth"); // 🔹 Remove autenticação ao sair
+    localStorage.removeItem("auth");
     router.push("/");
   };
 
@@ -35,7 +39,6 @@ const Sidebar: React.FC = () => {
     <div
       className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}
     >
-      {/* ✅ LOGO */}
       <div className={styles.logoContainer}>
         <Image src="/logo.png" alt="Logo" width={150} height={50} />
       </div>
@@ -44,7 +47,6 @@ const Sidebar: React.FC = () => {
         <FaBars />
       </button>
 
-      {/* ✅ MENU */}
       <nav className={styles.menu}>
         <ul>
           <li>
@@ -85,7 +87,6 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
 
-      {/* ✅ BOTÃO DE LOGOUT */}
       <div className={styles.logoutContainer}>
         <div className={styles.logout} onClick={handleLogout}>
           <FaSignOutAlt /> {isOpen && "Sair"}

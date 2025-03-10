@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const auth = localStorage.getItem("auth");
@@ -23,9 +24,23 @@ function MyApp({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <div style={{ display: "flex" }}>
-      {isAuthenticated && <Sidebar />}
-      <div style={{ flex: 1, paddingLeft: isAuthenticated ? "250px" : "0px" }}>
+    <div style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
+      {isAuthenticated && (
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      )}
+      <div
+        style={{
+          flex: 1,
+          marginLeft: isAuthenticated
+            ? isSidebarOpen
+              ? "250px"
+              : "60px"
+            : "0px",
+          transition: "margin-left 0.3s ease",
+          padding: "20px",
+          width: "100%",
+        }}
+      >
         <Component {...pageProps} />
       </div>
     </div>

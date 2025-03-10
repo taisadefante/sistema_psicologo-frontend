@@ -8,7 +8,11 @@
   justify-content: space-between;
   transition: width 0.3s;
   position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
   padding: 10px 0;
+  overflow: hidden;
 }
 
 .sidebar.closed {
@@ -38,12 +42,14 @@
 .sidebar nav ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .sidebar nav ul li {
   padding: 15px;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .sidebar nav ul li a {
@@ -53,6 +59,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar.closed nav ul li a span {
+  display: none;
 }
 
 .sidebar .logoutContainer {
