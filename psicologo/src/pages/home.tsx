@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import axios from "axios";
 import ptBR from "@fullcalendar/core/locales/pt-br";
 import Modal from "react-modal";
 import ProntuarioModal from "../components/ProntuarioModal";
+import "../styles/Calendar.module.css";
 
 const Home = () => {
   const [events, setEvents] = useState([]);
@@ -12,12 +13,11 @@ const Home = () => {
   const [appointmentsOfDay, setAppointmentsOfDay] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showProntuario, setShowProntuario] = useState(false);
+  const [calendarTitle, setCalendarTitle] = useState("");
+  const calendarRef = useRef(null);
 
-  useEffect(() => {
-    fetchCalendarEvents();
-  }, []);
-
-  const fetchCalendarEvents = async () => {
+  // Atualiza eventos com base na largura da tela
+  const generateEvents = async (isMobile) => {
     try {
       const [appointmentsRes, patientsRes] = await Promise.all([
         axios.get("http://localhost:5000/api/appointments"),
@@ -33,7 +33,7 @@ const Home = () => {
 
       const appointmentEvents = Object.keys(groupedAppointments).map(
         (date) => ({
-          title: "Consulta",
+          title: isMobile ? "Cons." : "🗓️ Consulta",
           date,
           extendedProps: {
             type: "Consulta",
@@ -53,7 +53,7 @@ const Home = () => {
           ).padStart(2, "0")}-${String(birthDate.getDate()).padStart(2, "0")}`;
 
           return {
-            title: "🎉 Aniversário",
+            title: isMobile ? "🎉" : "🎉 Aniversário",
             date: formattedDate,
             extendedProps: {
               type: "Aniversário",
@@ -68,6 +68,17 @@ const Home = () => {
       console.error("Erro ao carregar eventos:", error);
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 768;
+      generateEvents(isMobile);
+    };
+
+    handleResize(); // Chama na montagem
+    window.addEventListener("resize", handleResize); // Atualiza ao redimensionar
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleEventClick = (info) => {
     const { extendedProps } = info.event;
@@ -89,7 +100,7 @@ const Home = () => {
 
   const handleSendBirthday = (patient) => {
     const message = encodeURIComponent(
-      `Olá ${patient.name}, parabéns pelo seu aniversário!  Que o seu dia seja repleto de alegrias, saúde e muito sucesso.`
+      `Olá ${patient.name}, parabéns pelo seu aniversário! Que o seu dia seja repleto de alegrias, saúde e muito sucesso.`
     );
     window.open(
       `https://wa.me/${patient.phone.replace(/\D/g, "")}?text=${message}`,
@@ -107,12 +118,43 @@ const Home = () => {
     setSelectedPatient(null);
   };
 
+  const handleCalendarNav = (action) => {
+    const calendarApi = calendarRef.current.getApi();
+    if (action === "prev") calendarApi.prev();
+    else if (action === "next") calendarApi.next();
+    else if (action === "today") calendarApi.today();
+    setCalendarTitle(calendarApi.view.title);
+  };
+
   return (
-    <div className="container-fluid px-2" style={{ marginTop: "10px" }}>
+    <div className="container-fluid px-2 mt-3">
+      <div className="mb-3 d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <h4 className="text-center">{calendarTitle}</h4>
+        <div className="d-flex gap-2 justify-content-center mt-2 mt-md-0">
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleCalendarNav("prev")}
+          >
+            ← Anterior
+          </button>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => handleCalendarNav("today")}
+          >
+            Hoje
+          </button>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => handleCalendarNav("next")}
+          >
+            Próximo →
+          </button>
+        </div>
+      </div>
+
       <div
         style={{
           overflowX: "auto",
-          width: "100%",
           background: "#fff",
           padding: "10px",
           borderRadius: "8px",
@@ -128,48 +170,19 @@ const Home = () => {
           aspectRatio={1.15}
           dayMaxEventRows={3}
           eventClick={handleEventClick}
+          headerToolbar={false}
+          ref={calendarRef}
+          datesSet={(arg) => setCalendarTitle(arg.view.title)}
         />
       </div>
 
       <Modal
         isOpen={!!selectedEvent}
         onRequestClose={handleCloseModal}
-        style={{
-          content: {
-            maxWidth: "500px",
-            margin: "auto",
-            padding: "20px",
-            borderRadius: "8px",
-            backgroundColor: "#2c3e50",
-            color: "white",
-            zIndex: 1000,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-            maxHeight: "80vh",
-            overflowY: "auto",
-          },
-          overlay: {
-            backgroundColor: "rgba(0, 0, 0, 0.85)",
-            zIndex: 999,
-          },
-        }}
+        className="modal-content-custom"
+        overlayClassName="modal-overlay-custom"
       >
-        <button
-          onClick={handleCloseModal}
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 15,
-            background: "transparent",
-            border: "none",
-            color: "white",
-            fontSize: "1.5rem",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={handleCloseModal} className="close-button">
           ×
         </button>
 
@@ -179,32 +192,24 @@ const Home = () => {
             {appointmentsOfDay.length === 0 ? (
               <p>Nenhuma consulta encontrada.</p>
             ) : (
-              <ul style={{ padding: 0, listStyle: "none" }}>
+              <ul className="consultas-lista p-0">
                 {appointmentsOfDay.map((appt) => (
-                  <li
-                    key={appt.id}
-                    style={{
-                      marginBottom: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <li key={appt.id} className="consulta-item">
                     <div>
                       <strong>
                         {new Date(appt.date).toLocaleTimeString("pt-BR", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </strong>
-                      : {appt.patient?.name || "Paciente"}
+                      </strong>{" "}
+                      - {appt.patient?.name || "Paciente"}
                     </div>
                     <button
-                      className="btn btn-sm btn-link text-white"
+                      className="btn btn-sm btn-link text-white mt-2 mt-md-0"
                       title="Ver prontuário"
                       onClick={() => openProntuario(appt.patient)}
                     >
-                      📋
+                      📋 Prontuário
                     </button>
                   </li>
                 ))}

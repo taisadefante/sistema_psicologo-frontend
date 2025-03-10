@@ -12,6 +12,7 @@ const Patients = () => {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [status, setStatus] = useState("Ativo");
   const [editingPatient, setEditingPatient] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isProntuarioOpen, setIsProntuarioOpen] = useState(false);
@@ -124,6 +125,7 @@ const Patients = () => {
             phone,
             address,
             birthdate,
+            status,
           }
         );
       } else {
@@ -132,12 +134,14 @@ const Patients = () => {
           phone,
           address,
           birthdate,
+          status,
         });
       }
       setName("");
       setPhone("");
       setAddress("");
       setBirthdate("");
+      setStatus("Ativo");
       setEditingPatient(null);
       fetchPatients();
     } catch (error) {
@@ -151,6 +155,7 @@ const Patients = () => {
     setPhone(patient.phone);
     setAddress(patient.address);
     setBirthdate(patient.birthdate);
+    setStatus(patient.status || "Ativo");
   };
 
   const handleDelete = async (id) => {
@@ -173,11 +178,7 @@ const Patients = () => {
   };
 
   const columns = [
-    {
-      name: "Paciente",
-      selector: (row) => row.name,
-      sortable: true,
-    },
+    { name: "Paciente", selector: (row) => row.name, sortable: true },
     {
       name: "Telefone",
       selector: (row) =>
@@ -193,13 +194,30 @@ const Patients = () => {
           "-"
         ),
     },
-    {
-      name: "Endereço",
-      selector: (row) => row.address,
-    },
+    { name: "Endereço", selector: (row) => row.address },
     {
       name: "Data de Nascimento",
       selector: (row) => formatDate(row.birthdate),
+    },
+    {
+      name: "Status",
+      cell: (row) => (
+        <select
+          value={row.status || "Ativo"}
+          onChange={async (e) => {
+            await axios.put(`http://localhost:5000/api/patients/${row.id}`, {
+              ...row,
+              status: e.target.value,
+            });
+            fetchPatients();
+          }}
+          className="form-select form-select-sm"
+        >
+          <option>Ativo</option>
+          <option>Inativo</option>
+          <option>Pausado</option>
+        </select>
+      ),
     },
     {
       name: "Prontuário",
@@ -219,13 +237,13 @@ const Patients = () => {
       cell: (row) => (
         <div>
           <button className={styles.editButton} onClick={() => handleEdit(row)}>
-            <img src="icon/pen.png" width={"20px"} />
+            <img src="icon/pen.png" width="20px" />
           </button>
           <button
             className={styles.deleteButton}
             onClick={() => handleDelete(row.id)}
           >
-            <img src="icon/bin.png" width={"20px"} />
+            <img src="icon/bin.png" width="20px" />
           </button>
         </div>
       ),
@@ -234,11 +252,7 @@ const Patients = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.sidebar}></div>
-      <div
-        className={styles.content}
-        style={{ marginLeft: "10px", marginRight: "10px" }}
-      >
+      <div className={styles.content}>
         <h2 className={styles.title}>Gestão de Pacientes</h2>
 
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -272,6 +286,15 @@ const Patients = () => {
             value={birthdate}
             onChange={(e) => setBirthdate(e.target.value)}
           />
+          <select
+            className={styles.input}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="Ativo">Ativo</option>
+            <option value="Inativo">Inativo</option>
+            <option value="Pausado">Pausado</option>
+          </select>
           <button className={styles.button} type="submit">
             {editingPatient ? "Atualizar" : "Cadastrar"}
           </button>
@@ -293,98 +316,6 @@ const Patients = () => {
           striped
         />
       </div>
-
-      <Modal
-        isOpen={isProntuarioOpen}
-        onRequestClose={handleCloseProntuario}
-        className={styles.modal}
-      >
-        {selectedPatient && (
-          <div>
-            <h2>📝 Prontuário de {selectedPatient.name}</h2>
-            <div className={styles.section}>
-              <strong>Telefone:</strong> {selectedPatient.phone}
-            </div>
-            <div className={styles.section}>
-              <strong>Endereço:</strong> {selectedPatient.address}
-            </div>
-            <div className={styles.section}>
-              <strong>Nascimento:</strong>{" "}
-              {formatDate(selectedPatient.birthdate)}
-            </div>
-
-            <h3 className={styles.subtitle}>Consultas</h3>
-            {appointments.length === 0 ? (
-              <p>Nenhuma consulta registrada.</p>
-            ) : (
-              <ul className={styles.list}>
-                {appointments.map((appt) => (
-                  <li key={appt.id} className={styles.card}>
-                    <strong>
-                      {new Date(appt.date).toLocaleString("pt-BR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </strong>{" "}
-                    — Tipo: {appt.type === "remoto" ? "Remoto" : "Presencial"}
-                    {appt.type === "remoto" && appt.link && (
-                      <div>
-                        <a href={appt.link} target="_blank" rel="noreferrer">
-                          🔗 Link da consulta
-                        </a>
-                      </div>
-                    )}
-                    <textarea
-                      value={editedDescriptions[appt.id] || ""}
-                      onChange={(e) =>
-                        handleDescriptionChange(appt.id, e.target.value)
-                      }
-                      placeholder="Descrição do atendimento..."
-                      rows={3}
-                      className={styles.textarea}
-                    />
-                    <div style={{ marginTop: 5 }}>
-                      <button
-                        className="btn btn-success btn-sm"
-                        onClick={() => handleSaveDescription(appt.id)}
-                      >
-                        Salvar
-                      </button>{" "}
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleClearDescription(appt.id)}
-                      >
-                        Apagar
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <h3 className={styles.subtitle}>Pagamentos</h3>
-            {payments.length === 0 ? (
-              <p>Nenhum pagamento registrado.</p>
-            ) : (
-              <ul className={styles.list}>
-                {payments.map((p) => (
-                  <li key={p.id}>
-                    {new Date(p.dueDate).toLocaleDateString("pt-BR")} -{" "}
-                    <strong>R$ {p.amount.toFixed(2)}</strong> - {p.status}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <button
-              onClick={handleCloseProntuario}
-              className="btn btn-secondary mt-3"
-            >
-              Fechar
-            </button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };
